@@ -2,14 +2,17 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package bragantialessandro_spotifile;
+package bragantialessandro_FIFile;
 
 /**
  *
  * @author braganti.alessandro
  */
 public class FormCampionato extends javax.swing.JFrame {
-    
+    private com.google.gson.Gson gson = new com.google.gson.Gson();
+    private final String INDIRIZZO_SERVER = "localhost";
+    private final int PORTA_SERVER = 5000;
+    private StatoStagione stagioneAttuale;
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FormCampionato.class.getName());
 
     /**
@@ -17,6 +20,15 @@ public class FormCampionato extends javax.swing.JFrame {
      */
     public FormCampionato() {
         initComponents();
+        cmbSquadre.removeAllItems();
+        
+        String[] titoliClassifica = {"Pos", "Squadra", "Pt", "G", "V", "N", "P", "GF", "GS"};
+        tblClassifica.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, titoliClassifica));
+
+        String[] titoliPartite = {"Giornata", "Casa", "Risultato", "Ospite"};
+        tblMarcatori.setModel(new javax.swing.table.DefaultTableModel(new Object[][]{}, titoliPartite));
+        
+        avviaEResetta();
     }
 
     /**
@@ -35,9 +47,9 @@ public class FormCampionato extends javax.swing.JFrame {
         lblLogoCasa = new javax.swing.JLabel();
         lblLogoOspiti = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        cmbSquadre = new javax.swing.JComboBox<>();
+        btnInizia = new javax.swing.JButton();
+        btnProssimaPartita = new javax.swing.JButton();
         btnCaricaPercorso = new javax.swing.JButton();
         btnSalvaPercorso = new javax.swing.JButton();
         lblLogoSquadraScelta = new javax.swing.JLabel();
@@ -99,18 +111,23 @@ public class FormCampionato extends javax.swing.JFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         jPanel2.setName("pnlClient"); // NOI18N
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        jComboBox1.setName("cmbSquadra"); // NOI18N
+        cmbSquadre.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbSquadre.setName("cmbSquadra"); // NOI18N
+        cmbSquadre.addActionListener(this::cmbSquadreActionPerformed);
 
-        jButton1.setText("Inizia");
-        jButton1.setName("btnIniziaCampionato"); // NOI18N
+        btnInizia.setText("Inizia");
+        btnInizia.setName("btnIniziaCampionato"); // NOI18N
+        btnInizia.addActionListener(this::btnIniziaActionPerformed);
 
-        jButton2.setLabel("ProssimaPartita");
-        jButton2.setName("btnProssimaPartita"); // NOI18N
+        btnProssimaPartita.setLabel("ProssimaPartita");
+        btnProssimaPartita.setName("btnProssimaPartita"); // NOI18N
+        btnProssimaPartita.addActionListener(this::btnProssimaPartitaActionPerformed);
 
         btnCaricaPercorso.setText("caricaPercorso");
+        btnCaricaPercorso.addActionListener(this::btnCaricaPercorsoActionPerformed);
 
         btnSalvaPercorso.setText("salva percorso");
+        btnSalvaPercorso.addActionListener(this::btnSalvaPercorsoActionPerformed);
 
         lblLogoSquadraScelta.setText("logo scelto");
 
@@ -121,13 +138,13 @@ public class FormCampionato extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cmbSquadre, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton1)
+                            .addComponent(btnInizia)
                             .addComponent(btnCaricaPercorso)
                             .addComponent(btnSalvaPercorso)
-                            .addComponent(jButton2))
+                            .addComponent(btnProssimaPartita))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
                         .addComponent(lblLogoSquadraScelta, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -136,13 +153,13 @@ public class FormCampionato extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cmbSquadre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(btnInizia)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2)
+                        .addComponent(btnProssimaPartita)
                         .addGap(12, 12, 12)
                         .addComponent(btnCaricaPercorso)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -245,6 +262,207 @@ public class FormCampionato extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnIniziaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniziaActionPerformed
+        avviaEResetta();
+    }//GEN-LAST:event_btnIniziaActionPerformed
+
+    private void btnProssimaPartitaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProssimaPartitaActionPerformed
+       giocaProssima();
+    }//GEN-LAST:event_btnProssimaPartitaActionPerformed
+
+    private void btnSalvaPercorsoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvaPercorsoActionPerformed
+        salvaFile();
+    }//GEN-LAST:event_btnSalvaPercorsoActionPerformed
+
+    private void btnCaricaPercorsoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCaricaPercorsoActionPerformed
+        caricaFile();
+    }//GEN-LAST:event_btnCaricaPercorsoActionPerformed
+
+    private void cmbSquadreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSquadreActionPerformed
+        if (stagioneAttuale != null && cmbSquadre.getSelectedItem() != null) {
+        String nome = cmbSquadre.getSelectedItem().toString();
+        mandaComando(Protocollo.SCEGLI_SQUADRA + Protocollo.SEPARATORE + nome);
+        mostraStemma(nome, lblLogoSquadraScelta);
+    }
+    }//GEN-LAST:event_cmbSquadreActionPerformed
+//METODI
+    private String mandaComando(String comando) {
+        try {
+            java.net.Socket connessione = new java.net.Socket(INDIRIZZO_SERVER, PORTA_SERVER);
+            java.io.PrintWriter invia = new java.io.PrintWriter(connessione.getOutputStream(), true);
+            java.io.BufferedReader ricevi = new java.io.BufferedReader(new java.io.InputStreamReader(connessione.getInputStream()));
+
+            invia.println(comando);
+            String risposta = ricevi.readLine();
+            connessione.close();
+            return risposta;
+        } catch (Exception errore) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Avvia prima il Server! Errore: " + errore.getMessage());
+            return null;
+        }
+    }
+    private void avviaEResetta() {
+        String testoJson = mandaComando(Protocollo.CARICA_E_RESET);
+        if (testoJson != null) {
+            stagioneAttuale = gson.fromJson(testoJson, StatoStagione.class);
+
+            cmbSquadre.removeAllItems();
+            for (int i = 0; i < stagioneAttuale.classifica.size(); i++) {
+                Squadra s = stagioneAttuale.classifica.get(i);
+                cmbSquadre.addItem(s.nome);
+            }
+
+            lblRisultatoCasa.setText("0");
+            lblRisultatoOspiti.setText("0");
+            aggiornaSchermo(stagioneAttuale);
+        }
+    }
+
+    private void giocaProssima() {
+        if (cmbSquadre.getSelectedItem() == null) {
+            return;
+        }
+        String squadraScelta = cmbSquadre.getSelectedItem().toString();
+        mandaComando(Protocollo.SCEGLI_SQUADRA + Protocollo.SEPARATORE + squadraScelta);
+
+        String testoJson = mandaComando(Protocollo.PROSSIMA_GIORNATA);
+        if (testoJson != null) {
+            stagioneAttuale = gson.fromJson(testoJson, StatoStagione.class);
+            aggiornaSchermo(stagioneAttuale);
+
+            boolean finito = true;
+            for (int i = 0; i < stagioneAttuale.calendario.size(); i++) {
+                Partita p = stagioneAttuale.calendario.get(i);
+                if (!p.giocata) {
+                    finito = false;
+                    break;
+                }
+            }
+
+            if (finito) {
+                int posizione = cercaPosizione(squadraScelta);
+                javax.swing.JOptionPane.showMessageDialog(this,
+                    "Campionato finito!\n" + squadraScelta + " è arrivata al " + posizione + "° posto!");
+            }
+        }
+    }
+    private void salvaFile() {
+        javax.swing.JFileChooser finestraFile = new javax.swing.JFileChooser();
+        int scelta = finestraFile.showSaveDialog(this);
+        if (scelta == javax.swing.JFileChooser.APPROVE_OPTION) {
+            String percorso = finestraFile.getSelectedFile().getAbsolutePath();
+            if (!percorso.endsWith(".json")) {
+                percorso = percorso + ".json";
+            }
+            String risposta = mandaComando(Protocollo.SALVA_FILE + Protocollo.SEPARATORE + percorso);
+            if (Protocollo.RISPOSTA_SALVATO.equals(risposta)) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Salvato in:\n" + percorso);
+            }
+        }
+    }
+
+    private void caricaFile() {
+        javax.swing.JFileChooser finestraFile = new javax.swing.JFileChooser();
+        int scelta = finestraFile.showOpenDialog(this);
+        if (scelta == javax.swing.JFileChooser.APPROVE_OPTION) {
+            String percorso = finestraFile.getSelectedFile().getAbsolutePath();
+            String testoJson = mandaComando(Protocollo.CARICA_FILE + Protocollo.SEPARATORE + percorso);
+            if (testoJson != null) {
+                stagioneAttuale = gson.fromJson(testoJson, StatoStagione.class);
+
+                cmbSquadre.removeAllItems();
+                for (int i = 0; i < stagioneAttuale.classifica.size(); i++) {
+                    Squadra s = stagioneAttuale.classifica.get(i);
+                    cmbSquadre.addItem(s.nome);
+                }
+
+                if (stagioneAttuale.nomeSquadraScelta != null) {
+                    cmbSquadre.setSelectedItem(stagioneAttuale.nomeSquadraScelta);
+                }
+                aggiornaSchermo(stagioneAttuale);
+            }
+        }
+    }
+    private void aggiornaSchermo(StatoStagione stato) {
+        // 1. Riempie la tabella della classifica
+        javax.swing.table.DefaultTableModel tabellaClassifica = (javax.swing.table.DefaultTableModel) tblClassifica.getModel();
+        tabellaClassifica.setRowCount(0);
+        for (int i = 0; i < stato.classifica.size(); i++) {
+            Squadra s = stato.classifica.get(i);
+            Object[] riga = {
+                (i + 1) + "°", s.nome, s.punti, s.giocate, s.vinte, s.pareggiate, s.perse, s.golFatti, s.golSubiti
+            };
+            tabellaClassifica.addRow(riga);
+        }
+
+        // 2. Aggiorna il tabellone risultato e gli stemmi delle due sfidanti
+        if (stato.ultimaPartita != null) {
+            Partita p = stato.ultimaPartita;
+            lblRisultatoCasa.setText(String.valueOf(p.golCasa));
+            lblRisultatoOspiti.setText(String.valueOf(p.golOspite));
+            mostraStemma(p.squadraCasa, lblLogoCasa);
+            mostraStemma(p.squadraOspite, lblLogoOspiti);
+        }
+
+        // 3. Riempie la tabella con lo storico delle partite della squadra scelta
+        javax.swing.table.DefaultTableModel tabellaStorico = (javax.swing.table.DefaultTableModel) tblMarcatori.getModel();
+        tabellaStorico.setRowCount(0);
+        for (int i = 0; i < stato.calendario.size(); i++) {
+            Partita p = stato.calendario.get(i);
+            if (p.giocata && stato.nomeSquadraScelta != null) {
+                if (stato.nomeSquadraScelta.equals(p.squadraCasa) || stato.nomeSquadraScelta.equals(p.squadraOspite)) {
+                    Object[] rigaPartita = {
+                        "G" + p.giornata, p.squadraCasa, p.golCasa + " - " + p.golOspite, p.squadraOspite
+                    };
+                    tabellaStorico.addRow(rigaPartita);
+                }
+            }
+        }
+    }
+
+    private int cercaPosizione(String nomeSquadra) {
+        for (int i = 0; i < stagioneAttuale.classifica.size(); i++) {
+            Squadra s = stagioneAttuale.classifica.get(i);
+            if (s.nome.equals(nomeSquadra)) {
+                return i + 1;
+            }
+        }
+        return -1;
+    }
+
+    private void mostraStemma(String nomeSquadra, javax.swing.JLabel etichetta) {
+        if (stagioneAttuale == null) {
+            return;
+        }
+        for (int i = 0; i < stagioneAttuale.classifica.size(); i++) {
+            Squadra s = stagioneAttuale.classifica.get(i);
+            if (s.nome.equals(nomeSquadra) && s.stemma != null) {
+                try {
+                    java.net.URL indirizzoImmagine = new java.net.URL(s.stemma + "/tiny");
+                    javax.swing.ImageIcon icona = new javax.swing.ImageIcon(indirizzoImmagine);
+                    java.awt.Image immagine = icona.getImage().getScaledInstance(90, 90, java.awt.Image.SCALE_SMOOTH);
+                    etichetta.setText("");
+                    etichetta.setIcon(new javax.swing.ImageIcon(immagine));
+                } catch (Exception errore) {
+                    etichetta.setIcon(null);
+                    etichetta.setText(nomeSquadra);
+                }
+                break;
+            }
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /**
      * @param args the command line arguments
      */
@@ -272,10 +490,10 @@ public class FormCampionato extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCaricaPercorso;
+    private javax.swing.JButton btnInizia;
+    private javax.swing.JButton btnProssimaPartita;
     private javax.swing.JButton btnSalvaPercorso;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> cmbSquadre;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
